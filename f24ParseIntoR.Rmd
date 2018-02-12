@@ -1,0 +1,116 @@
+---
+title: "Untitled"
+author: "FC_rSTATS"
+date: "12/02/2018"
+output: html_document
+---
+
+# Parsing f24 XML files into R
+
+I can't remember where I found this solution but this is not my original work, if you are reading this and you are the orginal author then please let me know. 
+
+This script allows us to import a OPTA f24 file and twist it into a manageable dataframe object. 
+
+First up is to load the libraries, if you have not installed them yet do this first. 
+
+```{r}
+library(XML)
+library(plyr)
+library(reshape)
+```
+
+Make sure the f24 file if in your current working folder and then set it as a variable 'fnm'. 
+
+```{r}
+fnm <- "yourf24filename.xml"
+```
+
+Next we setup a function that helps to collate all of the events at the end of the process 
+
+```{r}
+#utility function
+grabAll <- function(XML.parsed, field){
+  parse.field <- xpathSApply(XML.parsed, paste("//", field, "[@*]", sep=""))
+  results <- t(sapply(parse.field, function(x) xmlAttrs(x)))
+  if(typeof(results)=="list"){
+    do.call(rbind.fill, lapply(lapply(results, t), data.frame, stringsAsFactors=F))
+  } else {
+    as.data.frame(results, stringsAsFactors=F)
+  }
+}
+```
+
+Next we take the XML work out its structure and chop it up, stick it together in different segments and tidy it up a little. 
+
+```{r}
+#XML Parsing
+pbpParse <- xmlInternalTreeParse(fnm)
+eventInfo <- grabAll(pbpParse, "Event")
+eventParse <- xpathSApply(pbpParse, "//Event")
+NInfo <- sapply(eventParse, function(x) sum(names(xmlChildren(x)) == "Q"))
+QInfo <- grabAll(pbpParse, "Q")
+EventsExpanded <- as.data.frame(lapply(eventInfo[,1:2], function(x) rep(x, NInfo)), stringsAsFactors=F)
+QInfo <- cbind(EventsExpanded, QInfo)
+names(QInfo)[c(1,3)] <- c("Eid", "Qid")
+QInfo$value <- ifelse(is.na(QInfo$value),-1, QInfo$value)
+Qual <- cast(QInfo, Eid ~ qualifier_id)
+```
+
+Finally, we merge all the different segments together to create a final 'events' dataframe. Just to check it worked we print the head of the data.frame.
+
+```{r}
+events <- merge(eventInfo, Qual, by.x="id", by.y="Eid", all.x=T)
+head(events)
+```
+
+Some values should be numeric but currently are in character format, so we change this as the final part of our parsing. 
+
+```{r}
+events$min <- as.numeric(as.character(events$min))
+events$sec <- as.numeric(as.character(events$sec))
+events$x <- as.numeric(as.character(events$x))
+events$y <- as.numeric(as.character(events$y))
+```
+
+Bingo, the events are ready to use! 
+
+## Full Code 
+
+```{r}
+library(XML)
+library(plyr)
+library(reshape)
+
+fnm <- "f24-8-2015-803268-eventdetails.xml"
+
+#utility function
+grabAll <- function(XML.parsed, field){
+  parse.field <- xpathSApply(XML.parsed, paste("//", field, "[@*]", sep=""))
+  results <- t(sapply(parse.field, function(x) xmlAttrs(x)))
+  if(typeof(results)=="list"){
+    do.call(rbind.fill, lapply(lapply(results, t), data.frame, stringsAsFactors=F))
+  } else {
+    as.data.frame(results, stringsAsFactors=F)
+  }
+}
+
+#XML Parsing
+pbpParse <- xmlInternalTreeParse(fnm)
+eventInfo <- grabAll(pbpParse, "Event")
+eventParse <- xpathSApply(pbpParse, "//Event")
+NInfo <- sapply(eventParse, function(x) sum(names(xmlChildren(x)) == "Q"))
+QInfo <- grabAll(pbpParse, "Q")
+EventsExpanded <- as.data.frame(lapply(eventInfo[,1:2], function(x) rep(x, NInfo)), stringsAsFactors=F)
+QInfo <- cbind(EventsExpanded, QInfo)
+names(QInfo)[c(1,3)] <- c("Eid", "Qid")
+QInfo$value <- ifelse(is.na(QInfo$value),-1, QInfo$value)
+Qual <- cast(QInfo, Eid ~ qualifier_id)
+
+#final data set
+events <- merge(eventInfo, Qual, by.x="id", by.y="Eid", all.x=T)
+events$min <- as.numeric(as.character(events$min))
+events$sec <- as.numeric(as.character(events$sec))
+events$x <- as.numeric(as.character(events$x))
+events$y <- as.numeric(as.character(events$y))
+
+```
