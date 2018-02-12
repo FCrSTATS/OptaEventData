@@ -74,7 +74,7 @@ library(XML)
 library(plyr)
 library(reshape)
 
-fnm <- "f24-8-2015-803268-eventdetails.xml"
+fnm <- "yourf24filename.xml"
 
 #utility function
 grabAll <- function(XML.parsed, field){
