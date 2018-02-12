@@ -1,4 +1,4 @@
-# Parsing f24 XML files into R
+# Parsing OPTA f24 XML files into R
 
 I can't remember where I found this solution but this is not my original work, if you are reading this and you are the orginal author then please let me know. 
 
