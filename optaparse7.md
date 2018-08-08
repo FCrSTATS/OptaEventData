@@ -116,7 +116,7 @@ all.event.nodes <- pbpParse %>%
 
 These few lines seem simple but will pass the list of events, take one row at a time, pass it through our function and then bind all of the results into one dataframe names full.unpack! Powerful stuff :)
 
-```{r}
+``` r
     full.unpack <- all.event.nodes %>% 
     split(1:nrow(.)) %>% 
     purrr::map(convert.event.node.row) %>% 
@@ -126,7 +126,7 @@ These few lines seem simple but will pass the list of events, take one row at a 
 Job done! you are now left with a dataframe of event information for all events! 
 
 ## Complete Code 
-```{r}
+``` r
 ## Enter the location of the events XML for the match you want to process 
 events.xml <- "LOCATON_OF_XML_FILE_ON_YOUR_COMPUTER"
 
