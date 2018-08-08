@@ -195,7 +195,7 @@ convert.event.node.row <- function(xml.2.spread){
 
 
 ## Load the libaries 
-library(plyr); library(reshape); library(xml2); library(XML)
+library(dplyr); library(purrr); library(xml2)
 
 ## Parse the XML
 pbpParse <- read_xml(events.xml, encoding = "", as_html = TRUE, options = "NOERROR")
