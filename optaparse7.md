@@ -198,7 +198,6 @@ convert.event.node.row <- function(xml.2.spread){
 library(plyr); library(reshape); library(xml2); library(XML)
 
 ## Parse the XML
-events.xml <- paste0("Database/Events/Raw Data/" , Match.Select, "_f24.xml")
 pbpParse <- read_xml(events.xml, encoding = "", as_html = TRUE, options = "NOERROR")
 
 ## Spilt the Loaded XML Tree
