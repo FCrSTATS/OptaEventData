@@ -118,3 +118,14 @@ all.event.nodes <- pbpParse %>%
 ### Put Every Event into Our Main Function
 
 These few lines seem simple but will pass the list of events, take one row at a time, pass it through our function and then bind all of the results into one dataframe names full.unpack! Powerful stuff :)
+
+```{r}
+    full.unpack <- all.event.nodes %>% 
+    split(1:nrow(.)) %>% 
+    purrr::map(convert.event.node.row) %>% 
+    dplyr::bind_rows()
+```
+
+Job done! you are now left with a dataframe of event information for all events! 
+
+
